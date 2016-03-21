@@ -48,7 +48,9 @@ public class SkillDAOJDBCImpl implements SkillDAO
 	{
 		String skillDescription = null;
 		int skillId;
-		Skill skill = new Skill();
+		int skdId;
+		String skdDescription;
+		
 		List<Skill> skillslist = new ArrayList<Skill>();
 		String readAllSkills = ("select s.* ,sd.skd_Id , skd_Description from Skill s ,Skill_Details sd where (s.Skill_Id=sd.Skill_Id)");
 		
@@ -56,35 +58,45 @@ public class SkillDAOJDBCImpl implements SkillDAO
 			
 			stmt = this.conn.prepareStatement(readAllSkills);
 			rs = stmt.executeQuery();
+			Skill skill=null;
+			int currentSkillId=0;
+			int previousSkillId=-1;
 			
 			while (rs.next()) 
 			{
+				currentSkillId = rs.getInt("Skill_Id");
 
-				for (Skill sk : skillslist) 
-				{
-					skillId = rs.getInt(1);
-					String name = rs.getString(2);
-					List<SkillDetails> skillDetailslist = new ArrayList<SkillDetails>();
-					skillDescription = rs.getString(3);
-					for (SkillDetails skd : skillDetailslist) 
-					{
-						SkillDetails sd = new SkillDetails();
+				if (currentSkillId == previousSkillId) {
+					SkillDetails skd = new SkillDetails();
+					skdId = rs.getInt("skd_Id");
+					skdDescription = rs.getString("skd_Description");
+					skillId = rs.getInt("skill_Id");
+					skd.setSkdId(skdId);
+					skd.setSkDtDescription(skdDescription);
+					skd.setSkdId(skdId);
+					skill.getSkillDetailslist().add(skd);
+				} else {
+					skill = new Skill();
+					SkillDetails sd = new SkillDetails();
+					List<SkillDetails> sdlist = new ArrayList<SkillDetails>();
 
-						int skdId = rs.getInt(4);
-						String skdtDescription = rs.getString(5);
-						sd.setSkdId(skdId);
-						sd.setSkDtDescription(skdtDescription);
-						skillDetailslist.add(sd);
-
-					}
-					skill.setSkillId(skillId);
+					String name = rs.getString("name");
+					skillDescription = rs.getString("Skill_Description");
+					skdId = rs.getInt("skd_Id");
+					skdDescription = rs.getString("skd_Description");
+					sd.setSkdId(skdId);
+					sd.setSkillId(currentSkillId);
+					sd.setSkDtDescription(skdDescription);
+					sdlist.add(sd);
 					skill.setName(name);
+					skill.setSkillId(currentSkillId);
 					skill.setSkillDescription(skillDescription);
-					skill.setSkillDetailslist(skillDetailslist);
+					skill.setSkillDetailslist(sdlist);
 					skillslist.add(skill);
-					this.conn.close();
-
+					previousSkillId = currentSkillId;
 				}
+
+				//
 
 			}
 		} catch (SQLException e) {

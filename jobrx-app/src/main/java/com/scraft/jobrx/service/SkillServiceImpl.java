@@ -44,6 +44,7 @@ public class SkillServiceImpl implements SkillService {
 		
 		for (Skill sk1 : skilllist) 
 		{
+			System.out.println("///////////");
 			displaySkill(sk1);
 		}
 	}
